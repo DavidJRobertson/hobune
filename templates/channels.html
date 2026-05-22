@@ -7,13 +7,19 @@
     </div>
     <div>
       <div>
+        <select name="sort" class="sort" oninput="channelSort()">
+          <option value="search-a">Name (asc)</option>
+          <option value="search-">Name (desc)</option>
+          <option value="videos-" selected>Most videos</option>
+          <option value="videos-a">Fewest videos</option>
+        </select>
         <input type="text" class="search" oninput="channelSearch()" placeholder="Search...">
       </div>
     </div>
   </div>
   <div class="channels flex-grid">
     {% for ch in channels %}
-    <div class="card searchable" data-search="{{ ch.search_string }}">
+    <div class="card searchable" data-search="{{ ch.search_string }}" data-videos="{{ ch.videos_count }}">
         <a href="{{ web_root }}channels/{{ ch.id }}{{ html_ext }}" class="inner">
             <div class="content">
                 <div class="title">{{ ch.name }}</div>

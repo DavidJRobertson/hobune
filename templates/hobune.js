@@ -13,7 +13,10 @@ function channelSort() {
         valA = parseInt(valA);
         valB = parseInt(valB);
       }
-      return (valA>valB?1:-1)*dir;
+      if (valA === valB && sortBy !== "search") {
+        return a.dataset.search.localeCompare(b.dataset.search);
+      }
+      return (valA > valB ? 1 : valA < valB ? -1 : 0) * dir;
     })
     .forEach(node=>container.appendChild(node));
 }
@@ -76,8 +79,9 @@ function channelSearch() {
 }
 
 window.addEventListener("load", () => {
-  // Always perform the search on page load, because:
+  // Always perform search and sort on page load, because:
   // 1) Navigating to a previous page will retain the textbox contents
-  // 2) The search may have been performed while the DOM wasn't fully loaded
+  // 2) The search/sort may have been performed while the DOM wasn't fully loaded
+  if (document.querySelector(".sort")) channelSort();
   channelSearch();
 });

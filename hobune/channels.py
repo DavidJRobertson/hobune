@@ -164,7 +164,7 @@ def create_all_videos_page(config, env, channels):
     all_videos = []
     for ch in channels.values():
         all_videos.extend(ch.videos)
-    all_videos.sort(key=lambda v: v.get('upload_date', '0'), reverse=True)
+    all_videos.sort(key=lambda v: (v.get('title') or '').lower())
     with open(os.path.join(config.output_path, "videos/index.html"), "w") as f:
         f.write(env.get_template("all_videos.html").render(
             title="Videos",
@@ -217,6 +217,7 @@ def create_channel_pages(config, env, channels):
             "unlisted_count": ch.unlisted_count,
         })
 
+    channels_list.sort(key=lambda ch: (-ch['videos_count'], ch['name'].lower()))
     with open(os.path.join(config.output_path, "channels/index.html"), "w") as f:
         f.write(channels_tmpl.render(
             title="Channels",
