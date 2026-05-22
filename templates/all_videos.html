@@ -22,7 +22,7 @@
     </div>
   </div>
   <div class="channels flex-grid">
-    {% for v in videos %}{{ video_card(v) }}{% endfor %}
+    {% for v in videos %}{{ video_card(v, show_uploader=True) }}{% endfor %}
   </div>
 </div>
 {% endblock %}

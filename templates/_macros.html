@@ -1,4 +1,4 @@
-{% macro video_card(v) %}
+{% macro video_card(v, show_uploader=False) %}
 {% set upload_date = v.upload_date | default("00000000") %}
 <div class="card searchable" data-search="{{ v.title }}{% if v.uploader is defined %} {{ v.uploader }}{% endif %}" data-date="{{ upload_date }}" data-views="{{ v.view_count | default(-1) }}">
     <a href="{{ web_root }}videos/{{ v.id }}{{ html_ext }}" class="inner">
@@ -7,6 +7,7 @@
       </div>
       <div class="content{% if v.removed %} removed{% endif %}{% if v.unlisted %} unlisted{% endif %}">
         <h3 class="title">{{ v.title }}</h3>
+        {% if show_uploader and v.uploader is defined %}<p class="meta">{{ v.uploader }}</p>{% endif %}
         {% set has_views = v.view_count is defined %}
         {% set has_date = v.upload_date is defined %}
         {% if has_views or has_date %}
