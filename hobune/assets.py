@@ -1,49 +1,57 @@
-import html
 import os
 import shutil
 
-from hobune.util import generate_meta_tags
+from jinja2 import Environment, FileSystemLoader
+from markupsafe import Markup, escape
+
+from hobune.util import quote_url
+
+
+def nl2br(value):
+    return Markup(str(escape(value)).replace('\n', '<br>\n'))
+
+
+def url_quote_filter(value):
+    return quote_url(str(value))
 
 
 def init_assets(output_path):
-    # Load html templates into memory
-    templates = {}
-    for template in os.listdir('templates'):
-        if template.endswith(".html"):
-            with open(os.path.join('templates', template), "r") as f:
-                templates[template[:-len(".html")]] = f.read()
+    env = Environment(
+        loader=FileSystemLoader('templates'),
+        autoescape=True,
+    )
+    env.filters['nl2br'] = nl2br
+    env.filters['url_quote'] = url_quote_filter
 
-    # Create folders
     for folder in ["channels", "videos", "comments"]:
         os.makedirs(os.path.join(output_path, folder), exist_ok=True)
 
-    # Copy assets
     for asset in ["hobune.css", "hobune.js", "favicon.ico", "icons.woff"]:
         shutil.copy(f"templates/{asset}", output_path)
 
-    return templates
+    return env
 
 
-def update_templates(config, templates, html_ext):
-    custom_pages_html = ""
-    # Creating links to custom pages
+def update_templates(config, env, html_ext):
+    custom_pages = [os.path.splitext(p)[0] for p in os.listdir('custom')]
+
+    env.globals.update(
+        web_root=config.web_root,
+        site_name=config.site_name,
+        html_ext=html_ext,
+        custom_pages=custom_pages,
+    )
+
+    custom_tmpl = env.get_template("custom_page.html")
     for custom_page in os.listdir('custom'):
-        custom_page = os.path.splitext(custom_page)[0]
-        custom_pages_html += f'<a href="{config.web_root}{custom_page}{html_ext}" class="{"item right" if len(custom_pages_html) == 0 else "item"}">{custom_page}</a> '
+        with open(f"custom/{custom_page}", "r") as f:
+            content = f.read()
+        page_name = os.path.splitext(custom_page)[0]
+        with open(os.path.join(config.output_path, f"{page_name}.html"), "w") as f:
+            f.write(custom_tmpl.render(title=page_name, meta={}, content=content))
 
-    templates["base"] = templates["base"]\
-        .replace("{custom_pages}", custom_pages_html)\
-        .replace("{web_root}", config.web_root)\
-        .replace("{site_name}", config.site_name)
-
-    for custom_page in os.listdir('custom'):
-        with open(f"custom/{custom_page}", "r") as custom_page_file:
-            custom_page = os.path.splitext(custom_page)[0]
-            with open(os.path.join(config.output_path, f"{custom_page}.html"), "w") as f:
-                f.write(templates["base"].format(title=custom_page, meta="", content=custom_page_file.read()))
     with open(os.path.join(config.output_path, "index.html"), "w") as f:
-        f.write(templates["base"].format(title="Home", meta=generate_meta_tags(
-            {
-                "description": f"{config.site_name} - archive"
-            }
-        ), content=templates["index"].replace("{site_name}", config.site_name)))
+        f.write(env.get_template("index.html").render(
+            title="Home",
+            meta={"description": f"{config.site_name} - archive"},
+        ))

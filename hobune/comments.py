@@ -13,53 +13,61 @@ This script purposefully avoids config.json as I want people to understand what 
 comments_enabled = False
 comments_path = "/var/www/html/comments/"
 
-def getCommentHTML(csnip):
-    timestamp = csnip["publishedAt"].replace("T"," ").replace("Z", " ")
-    if csnip["publishedAt"] != csnip["updatedAt"]:
-        timestamp += f' (edited {csnip["updatedAt"].replace("T"," ").replace("Z", " ")})'
-    likes = str(csnip["likeCount"]) + (" like" if csnip["likeCount"] == 1 else " likes")
-    return f"""
-<a href="{csnip["authorChannelUrl"]}"><b>{csnip["authorDisplayName"]}</b></a> <i>{timestamp}</i>
-<p>{csnip["textDisplay"]}</p>
-<small>{likes}</small>
-"""
 
-def getCommentsHTML(title, videoid):
+def _format_timestamp(published, updated):
+    timestamp = published.replace("T", " ").replace("Z", " ")
+    if published != updated:
+        timestamp += f' (edited {updated.replace("T", " ").replace("Z", " ")})'
+    return timestamp
+
+
+def _format_likes(count):
+    return f'{count} like' if count == 1 else f'{count} likes'
+
+
+def _parse_snippet(csnip):
+    return {
+        "author_url": csnip["authorChannelUrl"],
+        "author_name": csnip["authorDisplayName"],
+        "timestamp": _format_timestamp(csnip["publishedAt"], csnip["updatedAt"]),
+        "text": csnip["textDisplay"],  # intentional: YouTube API HTML content, rendered with | safe
+        "likes": _format_likes(csnip["likeCount"]),
+        "replies": [],
+    }
+
+
+def getCommentsData(video_id):
     if not comments_enabled:
-        return False, 0
-    comments = []
+        return None, 0
+    raw_comments = []
     header = {}
     try:
-        with open(f"{comments_path}/{videoid}.jsonl", "r") as f:
+        with open(f"{comments_path}/{video_id}.jsonl", "r") as f:
             header = json.loads(f.readline())
-            # Hacky workaround if you don't use my format of comments (w/header)
             if "time_fetched" not in header:
-                comments.append(header)
+                raw_comments.append(header)
                 header = {"time_fetched": "N/A"}
-            for l in f:
-                comments.append(json.loads(l))
+            for line in f:
+                raw_comments.append(json.loads(line))
     except Exception:
-        return False, 0
-    comments_html = ""
-    comments_count = 0
+        return None, 0
+
+    comments = []
+    top_count = 0
     total_count = 0
-    for comment in comments:
-        comments_count += 1
+    for raw in raw_comments:
+        top_count += 1
         total_count += 1
-        csnip = comment["snippet"]["topLevelComment"]["snippet"]
-        comment_html = getCommentHTML(csnip)
-        if "replies" in comment:
-            replies = ""
-            for reply in comment["replies"]["comments"][::-1]:
+        comment = _parse_snippet(raw["snippet"]["topLevelComment"]["snippet"])
+        if "replies" in raw:
+            for reply in raw["replies"]["comments"][::-1]:
                 total_count += 1
-                replies += f'<div class="reply">{getCommentHTML(reply["snippet"])}</div>\n'
-            comment_html += f"<details><summary>Replies ({len(comment['replies']['comments'])})</summary>\n{replies}</details>"
-        comments_html += f'<div class="comment">{comment_html}</div>\n'
-    comments_html = f"""<div class="container">
-    <h1>{title}</h1>
-                        <a href="/videos/{videoid}">Back to video page</a> | <a href="/comments/{videoid}.jsonl">Download comments jsonl</a>
-                                     <h2>Comments (archived {header["time_fetched"][:16].replace("T", " ")}; {comments_count} top, {total_count} total comments)</h2>
-                                                                                                         <div class="comments">\n
-                                                                                                         {comments_html}
-                                                                                                         </div></div>"""
-    return comments_html, comments_count
+                comment["replies"].append(_parse_snippet(reply["snippet"]))
+        comments.append(comment)
+
+    return {
+        "comments": comments,
+        "time_fetched": header["time_fetched"][:16].replace("T", " "),
+        "top_count": top_count,
+        "total_count": total_count,
+    }, top_count

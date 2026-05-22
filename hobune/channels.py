@@ -1,4 +1,3 @@
-import html
 import json
 import os
 import shutil
@@ -6,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from hobune.logger import logger
-from hobune.util import quote_url, generate_meta_tags, extract_ids_from_txt, no_traverse
+from hobune.util import extract_ids_from_txt, no_traverse
 
 
 @dataclass
@@ -33,7 +32,6 @@ def get_channel_details(v):
     uploader_id = v.get("uploader_id")
     channel_username = uploader_id if uploader_id and uploader_id[0] != "@" and uploader_id != channel_id else None
     channel_handle = uploader_id if uploader_id and uploader_id[0] == "@" else None
-    # Fix broken .info.json files that don't have the uploader field
     weak_name = "uploader" not in v
     channel_name = v.get("uploader", channel_username or channel_handle or channel_id)
     return [
@@ -74,7 +72,6 @@ def process_channel(channels, v, full):
 
 
 def initialize_channels(config):
-    # Generate removed and unlisted videos sets
     removed_videos = extract_ids_from_txt(config.removed_videos_file)
     unlisted_videos = extract_ids_from_txt(config.unlisted_videos_file)
     processed_video_ids = set()
@@ -83,13 +80,11 @@ def initialize_channels(config):
         "other": HobuneChannel("other", "Other videos")
     }
     for root, subdirs, files in os.walk(config.files_path):
-        # sort videos by date
         files.sort(reverse=True)
         for file in (file for file in files if file.endswith(".info.json")):
             try:
                 with open(os.path.join(root, file), "r") as f:
                     v = json.load(f)
-                # Skip channel/playlist info.json files
                 if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
                     continue
                 channel_id = process_channel(channels, v, is_full_channel(root))
@@ -108,15 +103,12 @@ def initialize_channels(config):
                                                                          :-len('.info.json')] + f".{ext}")[
                                                                         len(config.files_path):]
 
-                # Remember path of .info.json
                 v["root"] = root
                 v["file"] = file
 
-                # Skip duplicates
                 if v["id"] in processed_video_ids and len(
                         old_v := [video for video in channels[channel_id].videos if video["id"] == v["id"]]):
                     old_v = old_v[0]
-                    # If the previous duplicate has no video file, override it with the current one
                     if not old_v["has_video_file"] and v["has_video_file"]:
                         old_v["has_video_file"] = v["has_video_file"]
                         old_v["root"] = v["root"]
@@ -124,16 +116,13 @@ def initialize_channels(config):
                         old_v["custom_thumbnail"] = v["custom_thumbnail"]
                     continue
 
-                # Tag video if removed
                 v["removed"] = (v["id"] in removed_videos)
                 if v["removed"]:
                     channels[channel_id].removed_count += 1
-                # Tag video if unlisted
                 v["unlisted"] = (v["id"] in unlisted_videos)
                 if v["unlisted"]:
                     channels[channel_id].unlisted_count += 1
 
-                # Remove unnecessary keys to prevent memory exhaustion on big archives
                 [v.pop(k) for k in list(v.keys()) if
                  k not in ["title", "id", "custom_thumbnail", "view_count", "upload_date",
                            "removed", "unlisted", "root", "file", "has_video_file"]
@@ -142,7 +131,7 @@ def initialize_channels(config):
                 processed_video_ids.add(v["id"])
             except Exception as e:
                 print(f"Error processing {file}", e)
-    # Fix username-only entries with no channel ID
+
     username_map = {}
     for _, channel in channels.items():
         if channel.username and channel.username != channel.id:
@@ -168,88 +157,55 @@ def get_channel_note(channel):
 
 def get_channel_search_string(channel: HobuneChannel):
     all_names = list(channel.names) + list(channel.handles) + ([channel.username] if channel.username else [])
-    search_string = "; ".join(all_names)
-    return search_string
+    return "; ".join(all_names)
 
 
-def get_channel_aka(channel: HobuneChannel):
-    if channel.id == "other":
-        return ""
-    escaped_id = html.escape(channel.id)
-    aka_string = f'<a href="https://www.youtube.com/channel/{escaped_id}">{escaped_id}</a>'
-    if channel.username:
-        escaped_username = html.escape(channel.username)
-        aka_string += f', <a href="https://www.youtube.com/user/{escaped_username}">/user/{escaped_username}</a>'
-    names = [name for name in list(channel.names) if name != channel.name]
-    names_str = html.escape(", ".join(list(channel.handles) + names))
-    if names_str:
-        aka_string += "; " + names_str
-    return aka_string
+def create_channel_pages(config, env, channels):
+    channel_tmpl = env.get_template("channel.html")
+    channels_tmpl = env.get_template("channels.html")
 
-
-def create_channel_pages(config, templates, channels, html_ext):
-    channel_index = ""
-    for channel in channels:
-        if channel == "other" and len(channels["other"].videos) == 0:
+    channels_list = []
+    for channel_id, ch in channels.items():
+        if channel_id == "other" and len(ch.videos) == 0:
             logger.debug("Skipping channel page for 'other' because it is empty")
             continue
-        logger.debug(f"Creating channel pages for {channels[channel].name}")
-        videos_count_str = f"{len(channels[channel].videos)} videos{' (' + str(channels[channel].removed_count) + ' removed)' if channels[channel].removed_count > 0 else ''}{' (' + str(channels[channel].unlisted_count) + ' unlisted)' if channels[channel].unlisted_count > 0 else ''}"
-        channel_index += f"""
-                        <div class="card searchable" data-search="{html.escape(get_channel_search_string(channels[channel]))}">
-                            <a href="{config.web_root}channels/{channel}{html_ext}" class="inner">
-                                <div class="content">
-                                    <div class="title">{html.escape(channels[channel].name)}</div>
-                                    <div class="meta">{channels[channel].username or channel}</div>
-                                    <div class="description">
-                                        {videos_count_str}
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    """
-        with open(channel_html_path := os.path.join(config.output_path, f"channels/{no_traverse(channel)}.html"),
+        logger.debug(f"Creating channel pages for {ch.name}")
+
+        aka_names = [n for n in ch.names if n != ch.name]
+        with open(channel_html_path := os.path.join(config.output_path, f"channels/{no_traverse(channel_id)}.html"),
                   "w") as f:
-            cards = ""
-            subtitle = f"<p class=\"subtitle\">{get_channel_aka(channels[channel])}<br>{videos_count_str}</p>"
-            for v in sorted(channels[channel].videos, key=lambda x: x.get('upload_date', 0), reverse=True):
-                upload_date = v.get('upload_date', "00000000")
-                cards += f"""
-                <div class="card searchable" data-search="{html.escape(v['title'])}" data-date="{upload_date}" data-views="{v.get('view_count', -1)}">
-                    <a href="{config.web_root}videos/{v['id']}{html_ext}" class="inner">
-                      <div class="image thumbnail">
-                            <img loading="lazy" src="{quote_url(v['custom_thumbnail'])}">
-                      </div>
-                      <div class="content{' removed' if v["removed"] else ''}{' unlisted' if v["unlisted"] else ''}">
-                        <h3 class="title">{html.escape(v['title'])}</h3>
-                        <p>{v.get('view_count', -1)} views, {upload_date[:4]}-{upload_date[4:6]}-{upload_date[6:]}</p>
-                      </div>
-                    </a>
-                </div>
-                """
-            f.write(templates["base"].format(title=html.escape(channels[channel].name), meta=generate_meta_tags(
-                {
-                    "description": f"{channels[channel].name}'s channel archive"
-                }
-            ), content=templates["channel"].format(
-                channel=html.escape(channels[channel].name),
-                subtitle=subtitle,
-                note=get_channel_note(channel),
-                sort="",
-                cards=cards
-            )))
-        if channels[channel].username:
+            f.write(channel_tmpl.render(
+                title=ch.name,
+                meta={"description": f"{ch.name}'s channel archive"},
+                channel_id=channel_id,
+                channel_name=ch.name,
+                channel_username=ch.username,
+                aka_handles=list(ch.handles),
+                aka_names=aka_names,
+                videos_count=len(ch.videos),
+                removed_count=ch.removed_count,
+                unlisted_count=ch.unlisted_count,
+                note=get_channel_note(channel_id),
+                videos=sorted(ch.videos, key=lambda x: x.get('upload_date', 0), reverse=True),
+            ))
+
+        if ch.username:
             shutil.copy(channel_html_path,
-                        os.path.join(config.output_path, f"channels/{no_traverse(channels[channel].username)}.html"))
+                        os.path.join(config.output_path, f"channels/{no_traverse(ch.username)}.html"))
+
+        channels_list.append({
+            "id": channel_id,
+            "name": ch.name,
+            "username": ch.username,
+            "search_string": get_channel_search_string(ch),
+            "videos_count": len(ch.videos),
+            "removed_count": ch.removed_count,
+            "unlisted_count": ch.unlisted_count,
+        })
+
     with open(os.path.join(config.output_path, "channels/index.html"), "w") as f:
-        f.write(templates["base"].format(title="Channels", meta=generate_meta_tags(
-            {
-                "description": "Archived channels"
-            }
-        ), content=templates["channel"].format(
-            channel="Channels",
-            note="",
-            subtitle="",
-            sort=" hide",
-            cards=channel_index
-        )))
+        f.write(channels_tmpl.render(
+            title="Channels",
+            meta={"description": "Archived channels"},
+            channels=channels_list,
+        ))

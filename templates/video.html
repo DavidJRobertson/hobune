@@ -1,23 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
 <div class="container">
     <br>
    <div class="ui">
-      <video controls poster="{thumbnail}" class="rounded video">
-         <source src="{video}" type="video/mp4">
+      <video controls poster="{{ thumbnail | url_quote }}" class="rounded video">
+         <source src="{{ video | url_quote }}" type="video/mp4">
          Your browser does not support the video tag.
       </video>
    </div>
    <div class="info">
      <div class="main">
-       <h1>{title}</h1>
-       {comments}
-       <h2 class="subtitle">Description {ytlink}</h2>
-       <p>{description}</p>
+       <h1>{{ title }}</h1>
+       {% if comments_count %}
+       <p class="comments"><a href="{{ web_root }}comments/{{ video_id }}{{ html_ext }}">View comments ({{ comments_count }})</a></p>
+       {% endif %}
+       <h2 class="subtitle">Description <a class="ytlink" href="{{ webpage_url }}">{{ ytlink_label }}</a></h2>
+       <p>{{ description | nl2br }}</p>
      </div>
      <div class="side">
-       <p class="views">{views} views</p>
-       <p class="date">{date}</p>
-       <p class="uploader">Video by <a href="{uploader_url}" title="{uploader_id}">{uploader}</a></p>
-       {download}
+       <p class="views">{{ views }} views</p>
+       <p class="date">{{ date }}</p>
+       <p class="uploader">Video by <a href="{{ web_root }}channels/{{ uploader_id if is_full_channel else 'other' }}{{ html_ext }}" title="{{ uploader_id }}">{{ uploader }}</a></p>
+       {% for button in download_buttons %}
+       <a href="/dl{{ button.url | url_quote }}">
+           <div class="button download">
+               <i class="icon download"></i> {{ button.name }}
+           </div>
+       </a>
+       <br>
+       {% endfor %}
      </div>
    </div>
 </div>
+{% endblock %}

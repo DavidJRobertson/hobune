@@ -1,12 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
 <div class="container channels">
   <div class="head">
     <div class="title">
-      <h1 style="display: inline-block;">{channel}</h1>
-      {subtitle}
+      <h1 style="display: inline-block;">{{ channel_name }}</h1>
+      <p class="subtitle">
+        {% if channel_id != "other" %}
+        <a href="https://www.youtube.com/channel/{{ channel_id }}">{{ channel_id }}</a>
+        {% if channel_username %}, <a href="https://www.youtube.com/user/{{ channel_username }}">/user/{{ channel_username }}</a>{% endif %}
+        {% set aka = (aka_handles + aka_names) | join(', ') %}
+        {% if aka %}; {{ aka }}{% endif %}
+        <br>
+        {% endif %}
+        {{ videos_count }} videos{% if removed_count %} ({{ removed_count }} removed){% endif %}{% if unlisted_count %} ({{ unlisted_count }} unlisted){% endif %}
+      </p>
     </div>
     <div>
       <div>
-        <select name="sort" class="sort{sort}" oninput="channelSort()">
+        <select name="sort" class="sort" oninput="channelSort()">
           <option value="date-a">Date (asc)</option>
           <option value="date-" selected>Date (desc)</option>
           <option value="search-a">Name (asc)</option>
@@ -18,8 +29,22 @@
       </div>
     </div>
   </div>
-  {note}
+  {% if note %}{{ note | safe }}{% endif %}
   <div class="channels flex-grid">
-    {cards}
+    {% for v in videos %}
+    {% set upload_date = v.upload_date | default("00000000") %}
+    <div class="card searchable" data-search="{{ v.title }}" data-date="{{ upload_date }}" data-views="{{ v.view_count | default(-1) }}">
+        <a href="{{ web_root }}videos/{{ v.id }}{{ html_ext }}" class="inner">
+          <div class="image thumbnail">
+                <img loading="lazy" src="{{ v.custom_thumbnail | url_quote }}">
+          </div>
+          <div class="content{% if v.removed %} removed{% endif %}{% if v.unlisted %} unlisted{% endif %}">
+            <h3 class="title">{{ v.title }}</h3>
+            <p>{{ v.view_count | default(-1) }} views, {{ upload_date[:4] }}-{{ upload_date[4:6] }}-{{ upload_date[6:] }}</p>
+          </div>
+        </a>
+    </div>
+    {% endfor %}
   </div>
 </div>
+{% endblock %}

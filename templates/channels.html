@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container channels">
+  <div class="head">
+    <div class="title">
+      <h1 style="display: inline-block;">Channels</h1>
+    </div>
+    <div>
+      <div>
+        <input type="text" class="search" oninput="channelSearch()" placeholder="Search...">
+      </div>
+    </div>
+  </div>
+  <div class="channels flex-grid">
+    {% for ch in channels %}
+    <div class="card searchable" data-search="{{ ch.search_string }}">
+        <a href="{{ web_root }}channels/{{ ch.id }}{{ html_ext }}" class="inner">
+            <div class="content">
+                <div class="title">{{ ch.name }}</div>
+                <div class="meta">{{ ch.username or ch.id }}</div>
+                <div class="description">
+                    {{ ch.videos_count }} videos{% if ch.removed_count %} ({{ ch.removed_count }} removed){% endif %}{% if ch.unlisted_count %} ({{ ch.unlisted_count }} unlisted){% endif %}
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

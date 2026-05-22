@@ -1,9 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
 <div class="home">
   <h1 class="title">
-    {site_name}
+    {{ site_name }}
   </h1>
   <br>
-  <a class="button" href="channels/">
+  <a class="button" href="{{ web_root }}channels/">
    Enter the archive
   </a>
 </div>
@@ -12,3 +14,4 @@
     background-color: #1b1c1d;
   }
 </style>
+{% endblock %}

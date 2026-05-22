@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>{{ title }}</h1>
+    <a href="{{ web_root }}videos/{{ video_id }}{{ html_ext }}">Back to video page</a> | <a href="{{ web_root }}comments/{{ video_id }}.jsonl">Download comments jsonl</a>
+    <h2>Comments (archived {{ time_fetched }}; {{ top_count }} top, {{ total_count }} total comments)</h2>
+    <div class="comments">
+    {% for comment in comments %}
+    <div class="comment">
+        <a href="{{ comment.author_url }}"><b>{{ comment.author_name }}</b></a> <i>{{ comment.timestamp }}</i>
+        {# textDisplay contains HTML from the YouTube API — intentionally not escaped #}
+        <p>{{ comment.text | safe }}</p>
+        <small>{{ comment.likes }}</small>
+        {% if comment.replies %}
+        <details><summary>Replies ({{ comment.replies | length }})</summary>
+        {% for reply in comment.replies %}
+        <div class="reply">
+            <a href="{{ reply.author_url }}"><b>{{ reply.author_name }}</b></a> <i>{{ reply.timestamp }}</i>
+            <p>{{ reply.text | safe }}</p>
+            <small>{{ reply.likes }}</small>
+        </div>
+        {% endfor %}
+        </details>
+        {% endif %}
+    </div>
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}

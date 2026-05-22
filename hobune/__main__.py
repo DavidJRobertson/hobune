@@ -10,21 +10,20 @@ def main():
     if not config:
         exit()
 
-    templates = init_assets(config.output_path)
+    env = init_assets(config.output_path)
 
-    # Extension appended to links
     html_ext = ".html" if config.add_html_ext else ""
 
     logger.info("Populating channels list")
     channels = initialize_channels(config)
 
-    update_templates(config, templates, html_ext)
+    update_templates(config, env, html_ext)
 
     logger.info("Creating video pages")
-    create_video_pages(config, channels, templates, html_ext)
+    create_video_pages(config, channels, env)
 
     logger.info("Creating channel pages")
-    create_channel_pages(config, templates, channels, html_ext)
+    create_channel_pages(config, env, channels)
 
     logger.info("Done!")
 

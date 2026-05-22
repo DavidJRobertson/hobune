@@ -1,20 +1,11 @@
 import os
 import urllib.parse
-import html
 
 
 def no_traverse(path):
     return path.replace("/", "").replace("\\", "")
 
 
-def generate_meta_tags(meta):
-    h = ""
-    for m in meta:
-        h += f'<meta name="{m}" content="{html.escape(meta[m])}">'
-    return h
-
-
-# Quotes URL and fixes backslashes if necessary
 def quote_url(url):
     if os.path.sep == "\\":
         url = url.replace("\\", "/")
@@ -30,4 +21,3 @@ def extract_ids_from_txt(filename):
                 if len(l.strip()) >= 11:
                     ids.add(l.strip()[-11:])
     return ids
-
