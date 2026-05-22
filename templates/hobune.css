@@ -101,7 +101,8 @@ a {
 .card > .inner > .image > img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
     border-radius: inherit;
 }
 
@@ -390,7 +391,8 @@ a {
 }
 
 .thumbnail {
-  min-height: min(12.6vw, 200px);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
 }
 
 .comment p {
