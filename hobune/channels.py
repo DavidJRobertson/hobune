@@ -96,7 +96,7 @@ def initialize_channels(config):
                         v["has_video_file"] = True
                         break
 
-                v["custom_thumbnail"] = "/default.png"
+                v["custom_thumbnail"] = config.web_root + "default.svg"
                 for ext in ["webp", "jpg", "png"]:
                     if base + f".{ext}" in files:
                         v["custom_thumbnail"] = config.files_web_path + (os.path.join(root, file)[

@@ -43,7 +43,8 @@ def create_video_pages(config, channels, env):
                         break
 
                 # Get thumbnail path
-                thumbnail = "/default.png"
+                default_thumbnail = config.web_root + "default.svg"
+                thumbnail = default_thumbnail
                 for ext in ["webp", "jpg", "png"]:
                     if (thumbnail_file := f"{base}.{ext}") in files:
                         thumbnail = config.files_web_path + os.path.join(root, thumbnail_file)[len(config.files_path):]
@@ -63,7 +64,7 @@ def create_video_pages(config, channels, env):
                     desc_url = config.files_web_path + os.path.join(root, desc_file)[len(config.files_path):]
                     download_buttons.append({"name": "Description", "url": desc_url})
 
-                if thumbnail != "/default.png":
+                if thumbnail != default_thumbnail:
                     download_buttons.append({"name": "Thumbnail", "url": thumbnail})
 
                 for vtt in (vtt for vtt in files if vtt.endswith(".vtt")):

@@ -26,7 +26,7 @@ def init_assets(output_path):
     for folder in ["channels", "videos", "comments"]:
         os.makedirs(os.path.join(output_path, folder), exist_ok=True)
 
-    for asset in ["hobune.css", "hobune.js", "favicon.ico", "icons.woff"]:
+    for asset in ["hobune.css", "hobune.js", "favicon.ico", "icons.woff", "default.svg"]:
         shutil.copy(f"templates/{asset}", output_path)
 
     return env
