@@ -88,16 +88,26 @@ def create_video_pages(config, channels, templates, html_ext):
                         download_buttons_html += generate_download_button(f"Subtitles ({vtt_tag})", vtt_url)
 
                 # Create HTML
-                upload_date = v.get('upload_date', "00000000")
+                upload_date_raw = v.get('upload_date', None)
+                upload_date = None
+                if upload_date_raw is not None:
+                    upload_date = f"{upload_date_raw[:4]}-{upload_date_raw[4:6]}-{upload_date_raw[6:]}"
+
+                if "webpage_url" in v:
+                    ytlink = f"<a class=\"ytlink\" href=\"{html.escape(v['webpage_url'])}\">SRC</a>"
+                else:
+                    ytlink = f"<a class=\"ytlink\" href=https://www.youtube.com/watch?v={html.escape(v['id'])}>YT</a>"
+
+
                 page_html = templates["video"].format(
                     title=html.escape(v['title']),
-                    ytlink=f"<a class=\"ytlink\" href=https://www.youtube.com/watch?v={html.escape(v['id'])}>YT</a>",
+                    ytlink=ytlink,
                     description=html.escape(v.get('description', "N/A")).replace('\n', '<br>'),
-                    views=v.get('view_count', -1),
+                    views=v.get('view_count', None),
                     uploader_url=f"{config.web_root}channels/{html.escape(v.get('channel_id', v.get('uploader_id')))}{html_ext}" if is_full_channel(root) else f'{config.web_root}channels/other{html_ext}',
                     uploader_id={html.escape(v.get('channel_id', v.get('uploader_id')))},
                     uploader=html.escape(get_channel_name(v)),
-                    date=f"{upload_date[:4]}-{upload_date[4:6]}-{upload_date[6:]}",
+                    date=upload_date,
                     video=quote_url(mp4path),
                     thumbnail=quote_url(thumbnail),
                     download=download_buttons_html,
