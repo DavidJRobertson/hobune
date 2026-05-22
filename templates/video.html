@@ -14,12 +14,12 @@
        {% if comments_count %}
        <p class="comments"><a href="{{ web_root }}comments/{{ video_id }}{{ html_ext }}">View comments ({{ comments_count }})</a></p>
        {% endif %}
-       <h2 class="subtitle">Description <a class="ytlink" href="{{ webpage_url }}">{{ ytlink_label }}</a></h2>
+       <h2 class="subtitle">Description {% if webpage_url %}<a class="ytlink" href="{{ webpage_url }}">SRC</a>{% endif %}</h2>
        <p>{{ description | nl2br }}</p>
      </div>
      <div class="side">
-       <p class="views">{{ views }} views</p>
-       <p class="date">{{ date }}</p>
+       {% if views is not none %}<p class="views">{{ views }} views</p>{% endif %}
+       {% if date %}<p class="date">{{ date }}</p>{% endif %}
        <p class="uploader">Video by <a href="{{ web_root }}channels/{{ uploader_id if is_full_channel else 'other' }}{{ html_ext }}" title="{{ uploader_id }}">{{ uploader }}</a></p>
        {% for button in download_buttons %}
        <a href="/dl{{ button.url | url_quote }}">

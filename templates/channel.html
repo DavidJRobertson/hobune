@@ -6,8 +6,12 @@
       <h1 style="display: inline-block;">{{ channel_name }}</h1>
       <p class="subtitle">
         {% if channel_id != "other" %}
+        {% if channel_id | length == 24 and channel_id[:2] == 'UC' %}
         <a href="https://www.youtube.com/channel/{{ channel_id }}">{{ channel_id }}</a>
         {% if channel_username %}, <a href="https://www.youtube.com/user/{{ channel_username }}">/user/{{ channel_username }}</a>{% endif %}
+        {% else %}
+        {{ channel_id }}
+        {% endif %}
         {% set aka = (aka_handles + aka_names) | join(', ') %}
         {% if aka %}; {{ aka }}{% endif %}
         <br>
@@ -40,7 +44,11 @@
           </div>
           <div class="content{% if v.removed %} removed{% endif %}{% if v.unlisted %} unlisted{% endif %}">
             <h3 class="title">{{ v.title }}</h3>
-            <p>{{ v.view_count | default(-1) }} views, {{ upload_date[:4] }}-{{ upload_date[4:6] }}-{{ upload_date[6:] }}</p>
+            {% set has_views = v.view_count is defined %}
+            {% set has_date = v.upload_date is defined %}
+            {% if has_views or has_date %}
+            <p>{% if has_views %}{{ v.view_count }} views{% endif %}{% if has_views and has_date %}, {% endif %}{% if has_date %}{{ upload_date[:4] }}-{{ upload_date[4:6] }}-{{ upload_date[6:] }}{% endif %}</p>
+            {% endif %}
           </div>
         </a>
     </div>

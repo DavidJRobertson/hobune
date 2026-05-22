@@ -78,14 +78,6 @@ def create_video_pages(config, channels, env):
                 if upload_date_raw:
                     upload_date = f"{upload_date_raw[:4]}-{upload_date_raw[4:6]}-{upload_date_raw[6:]}"
 
-                # Source link
-                if "webpage_url" in v:
-                    webpage_url = v['webpage_url']
-                    ytlink_label = "SRC"
-                else:
-                    webpage_url = f"https://www.youtube.com/watch?v={v['id']}"
-                    ytlink_label = "YT"
-
                 full_channel = is_full_channel(root)
                 channel_id = v.get('channel_id', v.get('uploader_id', ''))
 
@@ -98,8 +90,7 @@ def create_video_pages(config, channels, env):
                         video=mp4path,
                         comments_count=comments_count,
                         description=v.get('description', "N/A"),
-                        webpage_url=webpage_url,
-                        ytlink_label=ytlink_label,
+                        webpage_url=v.get('webpage_url'),
                         views=v.get('view_count'),
                         date=upload_date,
                         uploader_id=channel_id,
