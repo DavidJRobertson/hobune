@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import video_card with context %}
 {% block content %}
 <div class="container channels">
   <div class="head">
@@ -35,24 +36,7 @@
   </div>
   {% if note %}{{ note | safe }}{% endif %}
   <div class="channels flex-grid">
-    {% for v in videos %}
-    {% set upload_date = v.upload_date | default("00000000") %}
-    <div class="card searchable" data-search="{{ v.title }}" data-date="{{ upload_date }}" data-views="{{ v.view_count | default(-1) }}">
-        <a href="{{ web_root }}videos/{{ v.id }}{{ html_ext }}" class="inner">
-          <div class="image thumbnail">
-                <img loading="lazy" src="{{ v.custom_thumbnail | url_quote }}">
-          </div>
-          <div class="content{% if v.removed %} removed{% endif %}{% if v.unlisted %} unlisted{% endif %}">
-            <h3 class="title">{{ v.title }}</h3>
-            {% set has_views = v.view_count is defined %}
-            {% set has_date = v.upload_date is defined %}
-            {% if has_views or has_date %}
-            <p>{% if has_views %}{{ v.view_count }} views{% endif %}{% if has_views and has_date %}, {% endif %}{% if has_date %}{{ upload_date[:4] }}-{{ upload_date[4:6] }}-{{ upload_date[6:] }}{% endif %}</p>
-            {% endif %}
-          </div>
-        </a>
-    </div>
-    {% endfor %}
+    {% for v in videos %}{{ video_card(v) }}{% endfor %}
   </div>
 </div>
 {% endblock %}

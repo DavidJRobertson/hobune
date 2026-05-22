@@ -124,7 +124,7 @@ def initialize_channels(config):
                     channels[channel_id].unlisted_count += 1
 
                 [v.pop(k) for k in list(v.keys()) if
-                 k not in ["title", "id", "custom_thumbnail", "view_count", "upload_date",
+                 k not in ["title", "id", "uploader", "custom_thumbnail", "view_count", "upload_date",
                            "removed", "unlisted", "root", "file", "has_video_file"]
                  ]
                 channels[channel_id].videos.append(v)
@@ -158,6 +158,20 @@ def get_channel_note(channel):
 def get_channel_search_string(channel: HobuneChannel):
     all_names = list(channel.names) + list(channel.handles) + ([channel.username] if channel.username else [])
     return "; ".join(all_names)
+
+
+def create_all_videos_page(config, env, channels):
+    all_videos = []
+    for ch in channels.values():
+        all_videos.extend(ch.videos)
+    all_videos.sort(key=lambda v: v.get('upload_date', '0'), reverse=True)
+    with open(os.path.join(config.output_path, "videos/index.html"), "w") as f:
+        f.write(env.get_template("all_videos.html").render(
+            title="Videos",
+            meta={"description": "All archived videos"},
+            videos=all_videos,
+            total=len(all_videos),
+        ))
 
 
 def create_channel_pages(config, env, channels):
