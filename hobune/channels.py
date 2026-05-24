@@ -82,6 +82,7 @@ def initialize_channels(config):
     }
     for root, subdirs, files in os.walk(config.files_path):
         files.sort(reverse=True)
+        info_json_bases = {f[:-len(".info.json")] for f in files if f.endswith(".info.json")}
         for file in (file for file in files if file.endswith(".info.json")):
             try:
                 with open(os.path.join(root, file), "r") as f:
@@ -138,6 +139,35 @@ def initialize_channels(config):
                 processed_video_ids.add(v["id"])
             except Exception as e:
                 print(f"Error processing {file}", e)
+
+        for file in files:
+            for ext in ["mp4", "webm", "mkv"]:
+                if file.endswith(f".{ext}"):
+                    base = file[:-len(f".{ext}")]
+                    if base not in info_json_bases and base not in processed_video_ids:
+                        thumbnail = config.web_root + "default.svg"
+                        for thumb_ext in ["webp", "jpg", "png"]:
+                            if base + f".{thumb_ext}" in files:
+                                thumbnail = config.files_web_path + os.path.join(root, base + f".{thumb_ext}")[len(config.files_path):]
+                                break
+                        channels["other"].videos.append({
+                            "id": base,
+                            "title": base.replace("_", " ").replace("-", " "),
+                            "uploader": None,
+                            "webpage_url": None,
+                            "custom_thumbnail": thumbnail,
+                            "view_count": None,
+                            "upload_date": None,
+                            "description_hash": hashlib.md5(b"").hexdigest()[:8],
+                            "video_size": os.path.getsize(os.path.join(root, file)),
+                            "removed": False,
+                            "unlisted": False,
+                            "root": root,
+                            "file": None,
+                            "has_video_file": True,
+                        })
+                        processed_video_ids.add(base)
+                    break
 
     username_map = {}
     for _, channel in channels.items():
@@ -207,7 +237,7 @@ def create_channel_pages(config, env, channels):
                 removed_count=ch.removed_count,
                 unlisted_count=ch.unlisted_count,
                 note=get_channel_note(channel_id),
-                videos=sorted(ch.videos, key=lambda x: x.get('upload_date', 0), reverse=True),
+                videos=sorted(ch.videos, key=lambda x: x.get('upload_date') or 0, reverse=True),
             ))
 
         if ch.username:

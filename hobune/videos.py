@@ -17,13 +17,17 @@ def create_video_pages(config, channels, env):
         for video_entry in channels[channel].videos:
             root = video_entry["root"]
             file = video_entry["file"]
-            base = file[:-len(".info.json")]
             if root not in dir_listings:
                 dir_listings[root] = os.listdir(root)
             files = dir_listings[root]
             try:
-                with open(os.path.join(root, file), "r") as f:
-                    v = json.load(f)
+                if file is not None:
+                    with open(os.path.join(root, file), "r") as f:
+                        v = json.load(f)
+                    base = file[:-len(".info.json")]
+                else:
+                    v = {"id": video_entry["id"], "title": video_entry["title"], "description": ""}
+                    base = video_entry["id"]
 
                 # Generate comments page
                 comments_data, comments_count = getCommentsData(v['id'])
