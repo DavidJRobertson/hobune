@@ -1,4 +1,5 @@
 from hobune.assets import init_assets, update_templates
+from hobune.categories import create_category_pages
 from hobune.channels import initialize_channels, create_channel_pages, create_all_videos_page
 from hobune.logger import logger
 from hobune.config import load_config
@@ -30,6 +31,9 @@ def main():
 
     logger.info("Creating all videos page")
     create_all_videos_page(config, env, channels)
+
+    logger.info("Creating category pages")
+    create_category_pages(config, env, channels)
 
     save_state(channels)
     logger.info("Done!")

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import video_card with context %}
+{% block content %}
+<div class="container channels">
+  <div class="head">
+    <div class="title">
+      <h1 style="display: inline-block;">{{ category_name }}</h1>
+      <p class="subtitle">{{ videos_count }} videos</p>
+    </div>
+    <div>
+      <div>
+        <select name="sort" class="sort" oninput="channelSort()">
+          <option value="date-a">Date (asc)</option>
+          <option value="date-" selected>Date (desc)</option>
+          <option value="search-a">Name (asc)</option>
+          <option value="search-">Name (desc)</option>
+          <option value="views-a">Views (asc)</option>
+          <option value="views-">Views (desc)</option>
+        </select>
+        <input type="text" class="search" oninput="channelSearch()" placeholder="Search...">
+      </div>
+    </div>
+  </div>
+  <div class="channels flex-grid">
+    {% for v in videos %}{{ video_card(v, show_uploader=True) }}{% endfor %}
+  </div>
+</div>
+{% endblock %}

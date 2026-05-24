@@ -1,6 +1,7 @@
 import json
 import os
 
+from hobune.categories import category_slug
 from hobune.channels import is_full_channel, get_channel_name
 from hobune.comments import getCommentsData
 from hobune.logger import logger
@@ -106,7 +107,7 @@ def create_video_pages(config, channels, env):
                         is_full_channel=full_channel,
                         download_buttons=download_buttons,
                         tags=v.get('tags') or [],
-                        categories=v.get('categories') or [],
+                        categories=[{"name": c, "slug": no_traverse(category_slug(c))} for c in (v.get('categories') or [])],
                     ))
             except Exception as e:
                 logger.error(f"Error processing {file}")
