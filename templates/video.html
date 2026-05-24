@@ -17,7 +17,7 @@
        {% if categories %}<p class="tag-list"><span class="tag-label">Categories</span>{% for cat in categories %}<a href="{{ web_root }}categories/{{ cat.slug }}{{ html_ext }}" class="tag category">{{ cat.name }}</a>{% endfor %}</p>{% endif %}
        <h2 class="subtitle">Description {% if webpage_url %}<a class="ytlink" href="{{ webpage_url }}">SRC</a>{% endif %}</h2>
        <p>{{ description | nl2br }}</p>
-       {% if tags %}<p class="tag-list"><span class="tag-label">Tags</span>{% for tag in tags %}<span class="tag">{{ tag }}</span>{% endfor %}</p>{% endif %}
+       {% if tags %}<p class="tag-list"><span class="tag-label">Tags</span>{% for tag in tags %}<a href="{{ web_root }}tags/{{ tag.slug }}{{ html_ext }}" class="tag">{{ tag.name }}</a>{% endfor %}</p>{% endif %}
      </div>
      <div class="side">
        {% if views is not none %}<p class="views">{{ views }} views</p>{% endif %}

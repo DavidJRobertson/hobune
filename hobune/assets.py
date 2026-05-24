@@ -23,7 +23,7 @@ def init_assets(output_path):
     env.filters['nl2br'] = nl2br
     env.filters['url_quote'] = url_quote_filter
 
-    for folder in ["channels", "videos", "comments", "categories"]:
+    for folder in ["channels", "videos", "comments", "categories", "tags"]:
         os.makedirs(os.path.join(output_path, folder), exist_ok=True)
 
     for asset in ["hobune.css", "hobune.js", "favicon.ico", "icons.woff", "default.svg"]:

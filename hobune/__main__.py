@@ -4,6 +4,7 @@ from hobune.channels import initialize_channels, create_channel_pages, create_al
 from hobune.logger import logger
 from hobune.config import load_config
 from hobune.state import load_state, save_state, compute_diff, print_diff
+from hobune.tags import create_tag_pages
 from hobune.videos import create_video_pages
 
 
@@ -34,6 +35,9 @@ def main():
 
     logger.info("Creating category pages")
     create_category_pages(config, env, channels)
+
+    logger.info("Creating tag pages")
+    create_tag_pages(config, env, channels)
 
     save_state(channels)
     logger.info("Done!")
