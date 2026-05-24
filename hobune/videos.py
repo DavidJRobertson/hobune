@@ -11,6 +11,7 @@ def create_video_pages(config, channels, env):
     dir_listings = {}
     tmpl = env.get_template("video.html")
     comments_tmpl = env.get_template("comments.html")
+    missing_thumbnails = []
     for channel in channels:
         logger.debug(f"Creating video pages for {channels[channel].name}")
         for video_entry in channels[channel].videos:
@@ -66,6 +67,8 @@ def create_video_pages(config, channels, env):
 
                 if thumbnail != default_thumbnail:
                     download_buttons.append({"name": "Thumbnail", "url": thumbnail})
+                else:
+                    missing_thumbnails.append(v.get('webpage_url') or v['id'])
 
                 for vtt in (vtt for vtt in files if vtt.endswith(".vtt")):
                     if vtt.startswith(base):
@@ -102,3 +105,4 @@ def create_video_pages(config, channels, env):
             except Exception as e:
                 logger.error(f"Error processing {file}")
                 print(e)
+    return missing_thumbnails

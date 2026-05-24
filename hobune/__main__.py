@@ -20,7 +20,11 @@ def main():
     update_templates(config, env, html_ext)
 
     logger.info("Creating video pages")
-    create_video_pages(config, channels, env)
+    missing_thumbnails = create_video_pages(config, channels, env)
+    if missing_thumbnails:
+        print(f"\nVideos missing thumbnails ({len(missing_thumbnails)}):")
+        for url in missing_thumbnails:
+            print(f"  {url}")
 
     logger.info("Creating channel pages")
     create_channel_pages(config, env, channels)
