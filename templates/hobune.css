@@ -364,9 +364,33 @@ a {
     font-size: 14px;
 }
 
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0;
+    align-items: center;
+}
+
+.tag-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(0,0,0,.5);
+    margin-right: 2px;
+}
+
 .tag {
-    font-size: 14px;
-    color: rgba(0,0,0,.6);
+    font-size: 13px;
+    background: rgba(0,0,0,.07);
+    color: rgba(0,0,0,.7);
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+
+.tag.category {
+    background: rgba(0,0,0,.15);
+    color: rgba(0,0,0,.85);
+    font-weight: 600;
 }
 
 .rounded {

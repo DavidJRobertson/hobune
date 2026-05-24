@@ -133,7 +133,8 @@ def initialize_channels(config):
 
                 [v.pop(k) for k in list(v.keys()) if
                  k not in ["title", "id", "uploader", "webpage_url", "custom_thumbnail", "view_count",
-                           "upload_date", "description_hash", "video_size", "removed", "unlisted", "root", "file", "has_video_file"]
+                           "upload_date", "description_hash", "video_size", "removed", "unlisted", "root", "file", "has_video_file",
+                           "tags", "categories"]
                  ]
                 channels[channel_id].videos.append(v)
                 processed_video_ids.add(v["id"])

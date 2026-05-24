@@ -105,6 +105,8 @@ def create_video_pages(config, channels, env):
                         uploader=get_channel_name(v),
                         is_full_channel=full_channel,
                         download_buttons=download_buttons,
+                        tags=v.get('tags') or [],
+                        categories=v.get('categories') or [],
                     ))
             except Exception as e:
                 logger.error(f"Error processing {file}")

@@ -14,8 +14,10 @@
        {% if comments_count %}
        <p class="comments"><a href="{{ web_root }}comments/{{ video_id }}{{ html_ext }}">View comments ({{ comments_count }})</a></p>
        {% endif %}
+       {% if categories %}<p class="tag-list"><span class="tag-label">Categories</span>{% for cat in categories %}<span class="tag category">{{ cat }}</span>{% endfor %}</p>{% endif %}
        <h2 class="subtitle">Description {% if webpage_url %}<a class="ytlink" href="{{ webpage_url }}">SRC</a>{% endif %}</h2>
        <p>{{ description | nl2br }}</p>
+       {% if tags %}<p class="tag-list"><span class="tag-label">Tags</span>{% for tag in tags %}<span class="tag">{{ tag }}</span>{% endfor %}</p>{% endif %}
      </div>
      <div class="side">
        {% if views is not none %}<p class="views">{{ views }} views</p>{% endif %}
