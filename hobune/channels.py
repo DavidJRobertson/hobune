@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import shutil
@@ -91,9 +92,11 @@ def initialize_channels(config):
 
                 base = file[:-len(".info.json")]
                 v["has_video_file"] = False
+                v["video_size"] = None
                 for ext in ["mp4", "webm", "mkv"]:
-                    if base + f".{ext}" in files:
+                    if (video_file := base + f".{ext}") in files:
                         v["has_video_file"] = True
+                        v["video_size"] = os.path.getsize(os.path.join(root, video_file))
                         break
 
                 v["custom_thumbnail"] = config.web_root + "default.svg"
@@ -123,9 +126,13 @@ def initialize_channels(config):
                 if v["unlisted"]:
                     channels[channel_id].unlisted_count += 1
 
+                v["description_hash"] = hashlib.md5(
+                    (v.get("description") or "").encode()
+                ).hexdigest()[:8]
+
                 [v.pop(k) for k in list(v.keys()) if
-                 k not in ["title", "id", "uploader", "custom_thumbnail", "view_count", "upload_date",
-                           "removed", "unlisted", "root", "file", "has_video_file"]
+                 k not in ["title", "id", "uploader", "webpage_url", "custom_thumbnail", "view_count",
+                           "upload_date", "description_hash", "video_size", "removed", "unlisted", "root", "file", "has_video_file"]
                  ]
                 channels[channel_id].videos.append(v)
                 processed_video_ids.add(v["id"])
