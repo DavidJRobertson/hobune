@@ -5,3 +5,4 @@ hobune_state.json
 .idea
 __pycache__
 html/
+.DS_Store
