@@ -10,7 +10,8 @@ def _build_state(channels):
         for v in ch.videos:
             state[v["id"]] = {
                 "title": v.get("title", ""),
-                "url": v.get("webpage_url", ""),
+                "url": v.get("webpage_url"),
+                "file": v.get("file"),
                 "description_hash": v.get("description_hash", ""),
                 "has_thumbnail": not v.get("custom_thumbnail", "").endswith("default.svg"),
                 "video_size": v.get("video_size"),
