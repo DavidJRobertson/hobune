@@ -1,9 +1,9 @@
 {
-  "site_name": "Hobune",
-  "files_path": "/var/www/html/files/",
-  "files_web_path": "/files/",
-  "web_root": "/",
-  "output_path": "/var/www/html/",
+  "site_name": "Video Archive",
+  "files_path": "../",
+  "files_web_path": "/",
+  "web_root": "/hobune/html",
+  "output_path": "html",
   "add_html_ext": true,
   "removed_videos_file": "",
   "unlisted_videos_file": ""
