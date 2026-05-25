@@ -1,5 +1,7 @@
 import json
 import os
+import random
+
 
 from hobune.categories import category_slug
 from hobune.tags import tag_slug
@@ -10,6 +12,10 @@ from hobune.util import no_traverse
 
 
 def create_video_pages(config, channels, env):
+    all_ids = [v["id"] for ch in channels.values() for v in ch.videos]
+    random.shuffle(all_ids)
+    next_video = {all_ids[i]: all_ids[(i + 1) % len(all_ids)] for i in range(len(all_ids))}
+
     dir_listings = {}
     tmpl = env.get_template("video.html")
     comments_tmpl = env.get_template("comments.html")
@@ -107,6 +113,7 @@ def create_video_pages(config, channels, env):
                         uploader=get_channel_name(v),
                         is_full_channel=full_channel,
                         download_buttons=download_buttons,
+                        random_video=no_traverse(next_video[v['id']]),
                         tags=[{"name": t, "slug": no_traverse(tag_slug(t))} for t in (v.get('tags') or [])],
                         categories=[{"name": c, "slug": no_traverse(category_slug(c))} for c in (v.get('categories') or [])],
                     ))

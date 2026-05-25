@@ -29,6 +29,7 @@
         Videos
       </a>
       <span class="item grow"></span>
+      {% if random_video is defined %}<a href="{{ web_root }}videos/{{ random_video }}{{ html_ext }}" class="item">Surprise me</a>{% endif %}
       {% for page in custom_pages %}
       <a href="{{ web_root }}{{ page }}{{ html_ext }}" class="{{ 'item right' if loop.first else 'item' }}">{{ page }}</a>
       {% endfor %}
