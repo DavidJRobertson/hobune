@@ -1,7 +1,11 @@
 import json
 import os
 
-STATE_PATH = "hobune_state.json"
+CATALOG_FILENAME = "catalog.json"
+
+
+def _catalog_path(output_path):
+    return os.path.join(output_path, CATALOG_FILENAME)
 
 
 def _build_state(channels):
@@ -10,24 +14,27 @@ def _build_state(channels):
         for v in ch.videos:
             state[v["id"]] = {
                 "title": v.get("title", ""),
-                "url": v.get("webpage_url"),
+                "src_url": v.get("webpage_url"),
                 "file": v.get("file"),
-                "description_hash": v.get("description_hash", ""),
+                "description": v.get("description", ""),
+                "tags": v.get("tags") or [],
+                "categories": v.get("categories") or [],
                 "has_thumbnail": not v.get("custom_thumbnail", "").endswith("default.svg"),
                 "video_size": v.get("video_size"),
             }
     return state
 
 
-def load_state():
-    if not os.path.exists(STATE_PATH):
+def load_state(output_path):
+    path = _catalog_path(output_path)
+    if not os.path.exists(path):
         return None
-    with open(STATE_PATH) as f:
+    with open(path) as f:
         return json.load(f)
 
 
-def save_state(channels):
-    with open(STATE_PATH, "w") as f:
+def save_state(channels, output_path):
+    with open(_catalog_path(output_path), "w") as f:
         json.dump(_build_state(channels), f, indent=2)
 
 
@@ -45,7 +52,7 @@ def compute_diff(old_state, channels):
             changes = []
             if info["title"] != old.get("title"):
                 changes.append("title changed")
-            if info["description_hash"] != old.get("description_hash"):
+            if info["description"] != old.get("description"):
                 changes.append("description changed")
             if info["has_thumbnail"] != old.get("has_thumbnail"):
                 changes.append("thumbnail added" if info["has_thumbnail"] else "thumbnail removed")
@@ -62,7 +69,7 @@ def compute_diff(old_state, channels):
 
 
 def _fmt(info):
-    suffix = f" — {info['url']}" if info.get("url") else ""
+    suffix = f" — {info['src_url']}" if info.get("src_url") else ""
     return f"{info.get('title') or '(untitled)'}{suffix}"
 
 

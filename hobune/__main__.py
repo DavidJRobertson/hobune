@@ -17,7 +17,7 @@ def main():
 
     html_ext = ".html" if config.add_html_ext else ""
 
-    old_state = load_state()
+    old_state = load_state(config.output_path)
 
     logger.info("Populating channels list")
     channels = initialize_channels(config)
@@ -39,7 +39,7 @@ def main():
     logger.info("Creating tag pages")
     create_tag_pages(config, env, channels)
 
-    save_state(channels)
+    save_state(channels, config.output_path)
     logger.info("Done!")
 
     if old_state is not None:

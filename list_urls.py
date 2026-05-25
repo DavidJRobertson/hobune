@@ -1,12 +1,12 @@
 import json
 import sys
 
-state_path = sys.argv[1] if len(sys.argv) > 1 else "hobune_state.json"
+catalog_path = sys.argv[1] if len(sys.argv) > 1 else "html/catalog.json"
 
-with open(state_path) as f:
+with open(catalog_path) as f:
     state = json.load(f)
 
 for entry in state.values():
-    url = entry.get("url")
+    url = entry.get("src_url")
     if url:
         print(url)
