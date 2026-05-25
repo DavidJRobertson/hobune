@@ -20,7 +20,7 @@ def main():
     old_state = load_state(config.output_path)
 
     logger.info("Populating channels list")
-    channels = initialize_channels(config)
+    channels, missing_media = initialize_channels(config)
 
     update_templates(config, env, html_ext)
 
@@ -49,6 +49,11 @@ def main():
     if missing_thumbnails:
         print(f"\nVideos missing thumbnails ({len(missing_thumbnails)}):")
         for url in missing_thumbnails:
+            print(f"  {url}")
+
+    if missing_media:
+        print(f"\nVideos missing media file ({len(missing_media)}):")
+        for url in missing_media:
             print(f"  {url}")
 
 

@@ -182,7 +182,16 @@ def initialize_channels(config):
             channels[channel_id].videos += channel.videos
             channels[channel_id].names = channels[channel_id].names | channel.names
 
-    return channels
+    missing_media = []
+    for ch in channels.values():
+        without_media = [v for v in ch.videos if not v["has_video_file"]]
+        if without_media:
+            missing_media.extend(v.get("webpage_url") or v["id"] for v in without_media)
+            ch.videos = [v for v in ch.videos if v["has_video_file"]]
+            ch.removed_count = sum(1 for v in ch.videos if v.get("removed"))
+            ch.unlisted_count = sum(1 for v in ch.videos if v.get("unlisted"))
+
+    return channels, missing_media
 
 
 def get_channel_note(channel):
